@@ -1,4 +1,6 @@
-# Password Hashing and JWT Task
+# Task 7 - Password Hashing and Protected Notes
+
+**Name:** خالد محمد احمد السيد المصري
 
 This is a local Node.js practice project. It uses Express, PostgreSQL, TypeORM, bcryptjs, and JSON Web Tokens.
 
@@ -15,6 +17,9 @@ password-hashing-task/
 ├── entities/
 │   ├── note.js
 │   └── user.js
+├── middleware/
+│   └── auth.js
+├── .env
 ├── .env.example
 ├── .gitignore
 ├── db.js
