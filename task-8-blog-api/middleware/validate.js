@@ -13,9 +13,7 @@ function validate(schema, target = 'body') {
                 }))
             ));
         }
-        if (target !== 'query') {
-            req[target] = result.data;
-        }
+        req[target] = result.data;
         return next();
     };
 }

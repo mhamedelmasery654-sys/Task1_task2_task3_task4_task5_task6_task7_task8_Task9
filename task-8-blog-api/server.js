@@ -90,14 +90,16 @@ app.get('/health', async (req, res) => {
 
 app.post('/auth/register', validate(registerSchema), async (req, res) => {
     const { username, email, password } = req.body;
+    const normalizedUsername = String(username).trim();
+    const normalizedEmail = String(email).trim().toLowerCase();
     const userRepository = AppDataSource.getRepository('User');
-    const existingUser = await userRepository.findOne({ where: [{ username }, { email }] });
+    const existingUser = await userRepository.findOne({ where: [{ username: normalizedUsername }, { email: normalizedEmail }] });
     if (existingUser) {
         return res.status(409).json({ error: 'username or email is already registered' });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = userRepository.create({ username, email, password: passwordHash });
+    const user = userRepository.create({ username: normalizedUsername, email: normalizedEmail, password: passwordHash });
     const savedUser = await userRepository.save(user);
     return res.status(201).json({
         accessToken: createAccessToken(savedUser),
@@ -107,7 +109,8 @@ app.post('/auth/register', validate(registerSchema), async (req, res) => {
 
 app.post('/auth/login', validate(loginSchema), async (req, res) => {
     const { email, password } = req.body;
-    const user = await AppDataSource.getRepository('User').findOneBy({ email });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await AppDataSource.getRepository('User').findOneBy({ email: normalizedEmail });
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(401).json({ error: 'invalid email or password' });
     }
