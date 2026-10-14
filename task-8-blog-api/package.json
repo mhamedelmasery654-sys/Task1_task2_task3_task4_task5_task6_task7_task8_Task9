@@ -1,0 +1,21 @@
+{
+  "name": "task-8-blog-api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check db.js && node --check middleware/auth.js && node --check middleware/validate.js && node --check middleware/requireRole.js && node --check middleware/postOwnerCondition.js && node --check middleware/errorHandler.js && node --check entities/user.js && node --check entities/post.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.31",
+    "zod": "^3.25.76"
+  }
+}
