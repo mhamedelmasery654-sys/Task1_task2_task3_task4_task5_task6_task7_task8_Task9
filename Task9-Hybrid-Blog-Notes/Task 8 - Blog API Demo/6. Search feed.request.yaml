@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/posts/search?q=blog"
+method: GET
+order: 7000

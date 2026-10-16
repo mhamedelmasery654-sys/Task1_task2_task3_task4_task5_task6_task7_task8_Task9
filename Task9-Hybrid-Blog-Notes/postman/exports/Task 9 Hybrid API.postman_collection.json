@@ -1,0 +1,2012 @@
+{
+  "info": {
+    "_postman_id": "4d79e0f2-8ef6-45ec-8d08-0cf0d0a59063",
+    "name": "Task 9 Hybrid Blog + Notes API",
+    "description": "One Express API backed by PostgreSQL (Users, Posts, settings, audit) and MongoDB (Notes). Import the matching local environment. Run destructive tests only against disposable demo records.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3004",
+      "type": "string"
+    },
+    {
+      "key": "userAEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userAPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "duplicateEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "currentPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newPassword",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "Independent status for PostgreSQL and MongoDB.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"pm_user_a_{{$guid}}\",\n  \"email\": \"pm_user_a_{{$guid}}@example.invalid\",\n  \"password\": \"StrongPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });",
+                  "if (pm.response.code === 201 || pm.response.code === 200) { const d=pm.response.json(); if (d.accessToken) pm.environment.set('userAToken', d.accessToken); }",
+                  "if (pm.response.code === 201) { const d = pm.response.json(); if (d.user) { pm.environment.set('userId', d.user.id); pm.environment.set('userAEmail', d.user.email); } }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register User B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"pm_user_b_{{$guid}}\",\n  \"email\": \"pm_user_b_{{$guid}}@example.invalid\",\n  \"password\": \"StrongPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });",
+                  "if (pm.response.code === 201 || pm.response.code === 200) { const d=pm.response.json(); if (d.accessToken) pm.environment.set('userBToken', d.accessToken); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login User A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userAEmail}}\",\n  \"password\": \"{{userAPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });",
+                  "if (pm.response.code === 201 || pm.response.code === 200) { const d=pm.response.json(); if (d.accessToken) pm.environment.set('userAToken', d.accessToken); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auth/me",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change password (manual values)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/change-password",
+            "description": "Requires user-controlled current/new passwords; do not save real passwords in shared environments.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{currentPassword}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register with duplicate email (negative)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"pm_duplicate_{{$guid}}\",\n  \"email\": \"{{duplicateEmail}}\",\n  \"password\": \"StrongPass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([400,409]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin authorization denied for regular user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/overview",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([403]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Create post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/posts",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Post from Postman {{$guid}}\",\n  \"content\": \"Postman integration test body.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });",
+                  "if (pm.response.code === 201 || pm.response.code === 200) { const d=pm.response.json(); const p=d.post || d; if (p.id) pm.environment.set('postId', p.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Authenticated posts feed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts/search?q=Postman",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get created post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts/{{postId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update created post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/posts/{{postId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated from Postman\",\n  \"content\": \"Updated content.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Non-owner cannot update post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/posts/{{postId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Should be rejected\",\n  \"content\": \"Ownership negative test.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([403,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Malformed post id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/posts/not-an-id",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete created post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/posts/{{postId}}",
+            "description": "Deletes the Postman-created record referenced by postId.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notes",
+      "item": [
+        {
+          "name": "Get Notes mode",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes/mode",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create private note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/notes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Private note {{$guid}}\",\n  \"visibility\": \"private\",\n  \"content\": \"Postman-generated private test data.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([201]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });",
+                  "if (pm.response.code === 201 || pm.response.code === 200) { const d=pm.response.json(); const n=d.note || d; if (n._id || n.id) pm.environment.set('noteId', n._id || n.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List my notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Shared notes feed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes/feed",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,403]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes/search?q=Postman",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get created note",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes/{{noteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Non-owner cannot read private note",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes/{{noteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update note",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/notes/{{noteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated private note\",\n  \"visibility\": \"private\",\n  \"content\": \"Updated test content.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete note",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/notes/{{noteId}}",
+            "description": "Deletes the Postman-created note referenced by noteId.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,204]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing note fields rejected",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/notes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid visibility rejected",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/notes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Invalid visibility test\",\n  \"content\": \"Must not be saved\",\n  \"visibility\": \"public\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Malformed Note ObjectId rejected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes/not-a-mongo-object-id",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userAToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Non-owner cannot update private Note",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/notes/{{noteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Ownership negative test\",\n  \"content\": \"Must not change\",\n  \"visibility\": \"private\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Non-owner cannot delete private Note",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/notes/{{noteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userBToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Data Checks",
+      "item": [
+        {
+          "name": "Missing token rejected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([401]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid token rejected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "invalid-test-token",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([401]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Admin overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/overview",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/users?page=1&limit=20",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List all posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/posts?page=1&limit=20",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List all notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/notes?page=1&limit=20",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get notes mode",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/settings/notes-mode",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Set notes mode (admin action)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/settings/notes-mode",
+            "description": "Changes creation policy only; does not alter visibility of existing notes.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notesMode\": \"both\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change note visibility (admin action)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/notes/{{noteId}}/visibility",
+            "description": "Run only with explicit confirmation; visibility change is audited.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visibility\": \"shared\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin audit log",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/audit?page=1&limit=20",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin search Notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/notes/search?q=Postman",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin get user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/users/{{userId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin update user profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{userId}}",
+            "description": "Optional manual test. Use a disposable test user ID; this changes account metadata.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_updated_demo\",\n  \"email\": \"admin_updated_demo@example.invalid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,400,409]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin change user role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{userId}}/role",
+            "description": "Sensitive role change; run only for a disposable test account.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,400,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin disable user",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{userId}}/status",
+            "description": "Use a disposable test user. The action revokes active sessions.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"disabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,400,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin reset user password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/admin/users/{{userId}}/password-reset",
+            "description": "Returns a one-time temporary password. Do not save the response in shared Postman history.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin get Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/posts/{{postId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/posts/{{postId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Admin Postman test edit\",\n  \"content\": \"Updated by admin for a disposable Postman test.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,400,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/admin/posts/{{postId}}",
+            "description": "Destructive. Use only a Post created for this test run.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,204,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin get Note",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/notes/{{noteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin update Note",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/notes/{{noteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Admin Postman note edit\",\n  \"content\": \"Updated by admin for a disposable test.\",\n  \"visibility\": \"private\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,400,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin delete Note",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/admin/notes/{{noteId}}",
+            "description": "Destructive. Use only a Note created for this test run.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,204,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin delete user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/admin/users/{{userId}}",
+            "description": "Destructive and cascades to Posts. Use only a disposable test account; last active admin protection applies.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let responseJson = {}; try { responseJson = pm.response.json(); } catch (e) {}",
+                  "pm.test('HTTP status is expected', function () { pm.expect(pm.response.code).to.be.oneOf([200,204,400,404]); });",
+                  "pm.test('Request ID is returned', function () { pm.expect(pm.response.headers.get('X-Request-Id') || responseJson.requestId || pm.response.code === 204).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

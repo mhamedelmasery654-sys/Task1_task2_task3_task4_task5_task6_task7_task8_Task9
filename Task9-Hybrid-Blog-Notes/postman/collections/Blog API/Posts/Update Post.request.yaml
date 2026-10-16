@@ -1,0 +1,14 @@
+$kind: http-request
+method: PUT
+url: '{{baseUrl}}/posts/{{postId}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Updated Post Title",
+      "content": "This is the updated content of the blog post."
+    }

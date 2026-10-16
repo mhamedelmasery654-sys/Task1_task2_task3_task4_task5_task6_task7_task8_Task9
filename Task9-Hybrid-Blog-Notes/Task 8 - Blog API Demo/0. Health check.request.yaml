@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/health"
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: pm.test('Database is connected', function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 1000

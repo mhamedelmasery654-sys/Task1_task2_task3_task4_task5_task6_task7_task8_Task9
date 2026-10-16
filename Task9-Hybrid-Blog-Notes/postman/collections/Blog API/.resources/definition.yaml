@@ -1,0 +1,11 @@
+$kind: collection
+description: A RESTful Blog API with authentication, post management, and admin features.
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+variables:
+  baseUrl: http://localhost:3004
+  accessToken: ""
+  postId: ""
+  userId: ""

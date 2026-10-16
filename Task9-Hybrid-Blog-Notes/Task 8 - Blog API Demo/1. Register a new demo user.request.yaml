@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "username": "{{username}}",
+      "email": "{{email}}",
+      "password": "StrongPass123"
+    }
+auth:
+  type: noauth
+scripts:
+  - type: beforeRequest
+    code: |-
+      const id = pm.variables.replaceIn('{{$guid}}').replace(/-/g, '').slice(0, 10);
+      pm.collectionVariables.set('username', 'blog_user_' + id);
+      pm.collectionVariables.set('email', 'blog_' + id + '@example.com');
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('User is registered', function () { pm.response.to.have.status(201); });
+      const body = pm.response.json();
+      pm.collectionVariables.set('accessToken', body.accessToken);
+    language: text/javascript
+order: 2000

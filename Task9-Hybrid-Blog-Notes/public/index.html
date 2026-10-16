@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task 8 Blog</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Task 8</p>
+          <h1>Blog API</h1>
+        </div>
+        <div class="topbar-actions">
+          <div id="userBadge" class="user-badge hidden"></div>
+          <button id="adminPanelToggle" class="secondary hidden" type="button">Admin Panel</button>
+          <button id="logoutBtn" class="secondary hidden" type="button">Logout</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel test-bench-panel">
+          <p class="eyebrow">API Test Bench</p>
+          <h2>HTTP diagnostics</h2>
+
+          <div class="bench-actions">
+            <button id="healthCheckBtn" class="secondary" type="button">Check /health</button>
+            <button id="meCheckBtn" class="secondary hidden" type="button">Get /auth/me</button>
+            <button id="adminAccessTestBtn" class="secondary hidden" type="button">Test GET /admin/users access</button>
+          </div>
+
+          <div class="bench-output" id="benchOutput" aria-live="polite">Run a check or sign in to begin testing the API.</div>
+          <div class="request-log-header">
+            <h3>Request history</h3>
+            <button id="clearRequestLogBtn" type="button" class="ghost small">Clear history</button>
+          </div>
+          <ol id="requestLog" class="request-log" aria-live="polite">
+            <li class="empty-state">API requests will appear here. Sensitive credentials and tokens are never shown.</li>
+          </ol>
+        </section>
+
+        <section id="authSection" class="panel auth-panel">
+          <div class="auth-tabs" role="tablist" aria-label="User authentication">
+            <button type="button" class="tab-button active" data-auth-tab="login">Login</button>
+            <button type="button" class="tab-button" data-auth-tab="register">Register</button>
+          </div>
+
+          <form id="loginForm" class="auth-form" novalidate>
+            <h2>Welcome back</h2>
+            <label>
+              Email
+              <input id="loginEmail" name="email" type="email" placeholder="name@example.com" required />
+            </label>
+            <label>
+              Password
+              <input id="loginPassword" name="password" type="password" placeholder="Your password" required />
+            </label>
+            <button class="primary" type="submit">Login</button>
+          </form>
+
+          <form id="registerForm" class="auth-form hidden" novalidate>
+            <h2>Create your account</h2>
+            <label>
+              Username
+              <input id="registerUsername" name="username" type="text" placeholder="Choose a username" required />
+            </label>
+            <label>
+              Email
+              <input id="registerEmail" name="email" type="email" placeholder="name@example.com" required />
+            </label>
+            <label>
+              Password
+              <input id="registerPassword" name="password" type="password" placeholder="StrongPass123" required />
+            </label>
+            <button class="primary" type="submit">Register</button>
+          </form>
+        </section>
+
+        <section id="appSection" class="hidden">
+          <section id="passwordChangeSection" class="panel auth-panel hidden">
+            <p class="eyebrow">Account security</p>
+            <h2>Change your temporary password</h2>
+            <p>Your administrator issued a temporary password. Change it before using the blog.</p>
+            <form id="passwordChangeForm" class="auth-form" novalidate>
+              <label>
+                Current temporary password
+                <input name="currentPassword" type="password" autocomplete="current-password" required />
+              </label>
+              <label>
+                New password
+                <input name="newPassword" type="password" autocomplete="new-password" minlength="6" required />
+              </label>
+              <label>
+                Confirm new password
+                <input name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required />
+              </label>
+              <p>Password must be at least 6 characters and contain an uppercase letter and a number.</p>
+              <button class="primary" type="submit">Change password</button>
+            </form>
+          </section>
+
+          <div id="feedPanel" class="panel feed-panel">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Live feed</p>
+                <h2>Latest posts</h2>
+              </div>
+              <form id="searchForm" class="search-form" novalidate>
+                <input id="searchInput" type="search" placeholder="Search posts..." />
+                <button type="submit" class="secondary">Search</button>
+                <button type="button" id="clearSearchBtn" class="ghost">Clear</button>
+              </form>
+            </div>
+
+            <form id="postForm" class="composer" novalidate>
+              <h3>Create a new post</h3>
+              <label>
+                Title
+                <input id="postTitle" name="title" type="text" maxlength="200" placeholder="Post title" required />
+              </label>
+              <label>
+                Content
+                <textarea id="postContent" name="content" rows="5" placeholder="Write something interesting..." required></textarea>
+              </label>
+              <button type="submit" class="primary">Publish</button>
+            </form>
+
+            <div id="feedStatus" class="status-message" aria-live="polite"></div>
+            <div id="feedList" class="posts" aria-live="polite"></div>
+          </div>
+
+          <section id="adminPanel" class="panel admin-panel hidden" aria-labelledby="adminPanelTitle">
+            <div class="admin-panel-heading">
+              <div>
+                <p class="eyebrow">Administration</p>
+                <h2 id="adminPanelTitle">Admin Panel</h2>
+              </div>
+              <button id="closeAdminPanel" class="secondary" type="button">Back to feed</button>
+            </div>
+
+            <nav class="admin-tabs" aria-label="Admin panel sections">
+              <button class="tab-button active" data-admin-tab="overview" type="button">Overview</button>
+              <button class="tab-button" data-admin-tab="users" type="button">Users</button>
+              <button class="tab-button" data-admin-tab="posts" type="button">Posts</button>
+              <button class="tab-button" data-admin-tab="audit" type="button">Audit log</button>
+            </nav>
+
+            <section id="adminOverviewSection" class="admin-tab-panel">
+              <div id="adminOverviewStatus" class="status-message" aria-live="polite">Loading overview…</div>
+              <div id="adminOverviewCards" class="admin-stat-grid"></div>
+              <div class="admin-overview-columns">
+                <div>
+                  <h3>Top authors</h3>
+                  <div id="adminTopAuthors"></div>
+                </div>
+                <div>
+                  <h3>Posts by author</h3>
+                  <div id="adminPostsByAuthor"></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="adminUsersSection" class="admin-tab-panel hidden">
+              <div class="admin-toolbar">
+                <label>Search users
+                  <input id="adminUserSearch" type="search" placeholder="Username or email" />
+                </label>
+                <label>Sort by
+                  <select id="adminUserSort">
+                    <option value="id">ID</option>
+                    <option value="username">Username</option>
+                    <option value="email">Email</option>
+                    <option value="role">Role</option>
+                    <option value="created_at">Created</option>
+                  </select>
+                </label>
+                <button id="adminUserSearchButton" class="secondary" type="button">Search</button>
+              </div>
+              <div id="adminUsersStatus" class="status-message" aria-live="polite"></div>
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                  <tbody id="adminUsersTable"></tbody>
+                </table>
+              </div>
+              <div class="admin-pagination">
+                <button id="adminUsersPrevious" class="secondary" type="button">Previous</button>
+                <span id="adminUsersPage"></span>
+                <button id="adminUsersNext" class="secondary" type="button">Next</button>
+              </div>
+              <form id="adminUserEditor" class="admin-editor hidden" novalidate>
+                <h3 id="adminUserEditorTitle">Edit user</h3>
+                <input name="id" type="hidden" />
+                <label>Username<input name="username" minlength="3" maxlength="80" required /></label>
+                <label>Email<input name="email" type="email" maxlength="255" required /></label>
+                <div class="admin-editor-actions">
+                  <button class="primary" type="submit">Save profile</button>
+                  <button id="cancelUserEdit" class="secondary" type="button">Cancel</button>
+                  <label>Role
+                    <select name="role"><option value="user">user</option><option value="admin">admin</option></select>
+                  </label>
+                  <button id="saveUserRole" class="secondary" type="button">Change role</button>
+                  <button id="toggleUserStatus" class="secondary" type="button">Disable account</button>
+                  <button id="resetUserPassword" class="danger" type="button">Reset password</button>
+                  <button id="deleteUser" class="danger" type="button">Delete user and posts</button>
+                </div>
+                <p id="adminUserEditorStatus" class="status-message" aria-live="polite"></p>
+              </form>
+            </section>
+
+            <section id="adminPostsSection" class="admin-tab-panel hidden">
+              <div class="admin-toolbar admin-post-filters">
+                <label>Search posts<input id="adminPostSearch" type="search" placeholder="Title or content" /></label>
+                <label>Author ID<input id="adminPostAuthor" type="number" min="1" placeholder="Any author" /></label>
+                <label>From<input id="adminPostFrom" type="date" /></label>
+                <label>To<input id="adminPostTo" type="date" /></label>
+                <button id="adminPostSearchButton" class="secondary" type="button">Filter</button>
+              </div>
+              <div id="adminPostsStatus" class="status-message" aria-live="polite"></div>
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead><tr><th>ID</th><th>Title</th><th>Excerpt</th><th>Author</th><th>Created</th><th>Updated</th><th>Actions</th></tr></thead>
+                  <tbody id="adminPostsTable"></tbody>
+                </table>
+              </div>
+              <div class="admin-pagination">
+                <button id="adminPostsPrevious" class="secondary" type="button">Previous</button>
+                <span id="adminPostsPage"></span>
+                <button id="adminPostsNext" class="secondary" type="button">Next</button>
+              </div>
+            </section>
+
+            <section id="adminAuditSection" class="admin-tab-panel hidden">
+              <div id="adminAuditStatus" class="status-message" aria-live="polite"></div>
+              <div id="adminAuditList" class="admin-audit-list"></div>
+              <div class="admin-pagination">
+                <button id="adminAuditPrevious" class="secondary" type="button">Previous</button>
+                <span id="adminAuditPage"></span>
+                <button id="adminAuditNext" class="secondary" type="button">Next</button>
+              </div>
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="postModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Post details</p>
+            <h3 id="modalTitle">Post</h3>
+          </div>
+          <button type="button" id="closeModalBtn" class="icon-button" aria-label="Close post details">×</button>
+        </div>
+
+        <div id="modalMeta" class="modal-meta"></div>
+
+        <form id="modalForm" novalidate>
+          <label>
+            Title
+            <input id="modalTitleInput" type="text" maxlength="200" required />
+          </label>
+          <label>
+            Content
+            <textarea id="modalContentInput" rows="6" required></textarea>
+          </label>
+          <div class="modal-actions">
+            <button type="button" id="deletePostBtn" class="danger hidden">Delete</button>
+            <button type="button" class="secondary" data-close-modal="true">Close</button>
+            <button type="submit" id="savePostBtn" class="primary">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="temporaryPasswordModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-password-modal="true"></div>
+      <section class="modal-card temporary-password-card" role="dialog" aria-modal="true" aria-labelledby="temporaryPasswordTitle">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Password reset</p>
+            <h3 id="temporaryPasswordTitle">Temporary password</h3>
+          </div>
+          <button type="button" id="closeTemporaryPasswordBtn" class="icon-button" aria-label="Close temporary password">×</button>
+        </div>
+        <p>Copy this password and share it with the account owner securely. It will be cleared when this window closes.</p>
+        <p id="temporaryPasswordOldStatus" class="status-message"></p>
+        <label for="temporaryPasswordInput">Temporary password</label>
+        <div class="copy-password-row">
+          <input id="temporaryPasswordInput" type="text" readonly autocomplete="off" />
+          <button type="button" id="copyTemporaryPasswordBtn" class="primary">Copy</button>
+        </div>
+        <p id="copyPasswordStatus" class="copy-password-status" aria-live="polite"></p>
+        <div class="modal-actions">
+          <button type="button" id="closeTemporaryPasswordAction" class="secondary">Close</button>
+        </div>
+      </section>
+    </div>
+
+	    <div id="toast" class="toast hidden" aria-live="assertive"></div>
+
+	    <script src="/app.js"></script>
+	    <script src="/workbench.js"></script>
+	  </body>
+</html>

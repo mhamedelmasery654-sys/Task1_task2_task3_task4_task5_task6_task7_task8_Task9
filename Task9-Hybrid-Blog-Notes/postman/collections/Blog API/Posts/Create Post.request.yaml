@@ -1,0 +1,22 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/posts'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "My First Post",
+      "content": "This is the content of my first blog post."
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const res = pm.response.json();
+      if (res.post && res.post.id) {
+        pm.collectionVariables.set('postId', res.post.id);
+      }

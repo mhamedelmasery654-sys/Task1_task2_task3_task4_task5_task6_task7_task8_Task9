@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/posts/{{createdPostId}}"
+method: DELETE
+scripts:
+  - type: afterResponse
+    code: pm.test('Post is deleted', function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 10000

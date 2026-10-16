@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/posts"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "My first blog post",
+      "content": "This is a demo post created from the Postman collection."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Post is created', function () { pm.response.to.have.status(201); });
+      pm.collectionVariables.set('createdPostId', String(pm.response.json().post.id));
+    language: text/javascript
+order: 5000

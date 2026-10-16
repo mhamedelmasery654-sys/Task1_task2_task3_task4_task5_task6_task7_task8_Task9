@@ -1,0 +1,14 @@
+$kind: collection
+description: Register a unique demo user or log in, then test the authenticated feed and post create/read/search/update/delete requests.
+variables:
+  baseUrl: http://localhost:3004
+  username: ""
+  email: ""
+  accessToken: ""
+  createdPostId: ""
+auth:
+  - id: 8eec1ef0-018a-4685-8a8d-2fa429eefbaa
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{accessToken}}"

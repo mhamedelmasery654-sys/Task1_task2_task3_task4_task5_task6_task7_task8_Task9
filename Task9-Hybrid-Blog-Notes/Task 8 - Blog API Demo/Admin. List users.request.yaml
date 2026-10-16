@@ -1,0 +1,5 @@
+$kind: http-request
+description: Use only after promoting your local test account to admin in PostgreSQL and logging in again with a fresh token.
+url: "{{baseUrl}}/admin/users"
+method: GET
+order: 11000
